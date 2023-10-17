@@ -1,0 +1,36 @@
+open jupyter notebook in diff drive
+
+If you are using Anaconda Navigator, do the following steps.
+
+1) Open command prompt (CMD.exe Prompt)
+2) Type "D:" and press enter.
+3) Now type "Jupyter Notebook" in the next line and press enter.
+or "jupyter lab"
+
+jupyter lab
+
+-------------
+
+variable inspector
+Variable inspector in Jupyter Notebook or JupyterLab
+https://medium.com/@heshanottawa/variable-inspector-in-jupyter-notebook-or-jupyterlab-mac-os-5639f12bbfb
+
+pip install lckr-jupyterlab-variableinspector
+
+Right click at anywhere in JupyterLab, and the last option, it should be "Open variable inspector"
+
+-------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+

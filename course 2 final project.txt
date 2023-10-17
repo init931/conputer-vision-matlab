@@ -1,0 +1,92 @@
+
+
+
+
+
+threePieceMask = bwpropfilt(puzzleMask,'Area',[22000, 25000]);
+threePieceProperties = regionprops("table", threePieceMask, {'Area', 'Eccentricity'});
+threePieceLinearMask = bwpropfilt(threePieceMask,'Eccentricity',[0.8, 1]);
+threePieceLinearBoxes = regionprops("table", threePieceLinearMask, "BoundingBox");
+
+
+
+
+
+puzzleImageBoxed = insertShape(puzzleImage,"Rectangle",threePieceLinearBoxes.BoundingBox,"color","red","LineWidth",5); 
+figure, imshow(puzzleImageBoxed);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+testCoinImage = img3;
+
+% Adjust data to span data range.
+testCoinImage = imadjust(testCoinImage);
+
+% Threshold image with manual threshold
+testCoinMask = im2gray(testCoinImage) > 1.275000e+02;
+
+% Open mask with default
+radius = 4;
+decomposition = 0;
+se = strel('disk', radius, decomposition);
+testCoinMask = imopen(testCoinMask, se);
+
+% Close mask with default
+radius = 4;
+decomposition = 0;
+se = strel('disk', radius, decomposition);
+testCoinMask = imclose(testCoinMask, se);
+
+% Fill holes
+testCoinMask = imfill(testCoinMask, 'holes');
+
+maskedCoinImage = testCoinImage;
+maskedCoinImage(~testCoinMask) = 0;
+
+
+
+
+BW = edge(maskedCoinImage, "sobel");
+faceEdgeMask = imerode(testCoinMask, strel("disk", 15)) & BW;
+
+
+validCoinMask = imdilate(faceEdgeMask, strel("disk", 30))& testCoinMask;
+
+
+
+
+coinSizes = regionprops("table", validCoinMask, {"Area"});
+
+
+nDimes = sum(coinSizes.Area > 4000 & coinSizes.Area <= 4500);
+nNickels = sum(coinSizes.Area > 6000 & coinSizes.Area <= 6200);
+nQuarters = sum(coinSizes.Area > 7700 & coinSizes.Area <= 8000);
+nFiftyCents = sum(coinSizes.Area > 12000 & coinSizes.Area <= 13000);
+
+USD = (nDimes * 0.1) + (nNickels * 0.05) + (nQuarters * 0.25) + (nFiftyCents * 0.5);
+
+
+
+
+
+
+
+
+

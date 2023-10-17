@@ -1,0 +1,274 @@
+blurring
+	imgaussfilt
+image filtering
+	imfilter
+	fspecial("average",[3,3])
+	fspecial("disk",3)
+	fspecial("gaussian")
+		imgaussfilt
+reduce noice
+	median filter
+	average filter
+motion
+	fspecial("motion",7,360)
+resizing
+	imresize
+	"can be faster on similar image"
+Blob Detection
+	fLog = fspecial("log",[3,3],0.4)
+detecting edges
+	edge(imgFilt,"sobel");
+		"nothinning" - edge thinning
+	simple gradient methods
+		 Sobel
+		 Prewitt
+		 Roberts
+	find circles
+		imfindcircles
+		viscircles
+		radii
+	same but with filters		
+		fSobel = fspecial("sobel")
+		fspecial("prewitt")
+		fspecial("laplacian")
+morphology
+	se = strel("disk",4,0);
+	erode
+		imerode
+	dilate
+		imdilate
+	open
+		imopen
+	close
+		imclose
+	fill holes
+		imfill
+image segmenter app
+combining multiple masks
+	BWdark | BWbright
+	maskedImage(repmat(~BW,1,1,3)) = 0;
+	invert mask
+		imcomplement
+	maskOn = labeloverlay(I,BW);
+	imshowpair(BW,BWf)
+clustering
+	k-means
+		labels = imsegkmeans(im2single(HSV),K);
+puzzle segmenting
+	processPuzzle.m
+region properties
+	regionprops
+	bwpropfilt
+coin counting
+analyze 3D images
+	dicominfo
+	dicomread
+	dicomreadVolume
+	vol = squeeze(vol);
+	volshow(vol);
+	sliceViewer(vol)
+		sliceViewer(vol,"SliceDirection","X")
+valid coins
+	CoinsProjectReading.pdf
+	segment foreground
+		testCoinImage = imread
+		imadjust
+		testCoinMask = im2gray(testCoinImage) > 1.275000e+02;
+		testCoinMask = imopen(testCoinMask, strel('disk', 4, 0);
+		testCoinMask = imclose(testCoinMask, strel('disk', 4, 0);
+		imfill
+	valid coin face edges
+		BW = edge(maskedCoinImage, "sobel");
+		faceEdgeMask = imerode(testCoinMask, strel("disk", 15)) & BW;
+	valid coin segmentation
+		validCoinMask = imdilate(faceEdgeMask, strel("disk", 30))& testCoinMask
+	Counting US Coins by Size
+		coinSizes = regionprops("table", validCoinMask, {"Area"});
+		nDimes = sum(coinSizes.Area > 4000 & coinSizes.Area <= 4500);
+		nNickels = sum(coinSizes.Area > 6000 & coinSizes.Area <= 6200);
+		nQuarters = sum(coinSizes.Area > 7700 & coinSizes.Area <= 8000);
+		nFiftyCents = sum(coinSizes.Area > 12000 & coinSizes.Area <= 13000);
+		USD = (nDimes * 0.1) + (nNickels * 0.05) + (nQuarters * 0.25) + (nFiftyCents * 0.5);
+
+
+
+
+
+
+
+
+fAverage = fspecial("average",[3,3])
+imgAveraged = imfilter(img, fAverage);
+montage({img, imgAveraged})
+
+fDisk = fspecial("disk",3)
+imgDisk = imfilter(img, fDisk);
+montage({img, imgDisk})
+
+fGaussian = fspecial("gaussian",[7,7],1)
+imgGaussian = imfilter(img, fGaussian);
+montage({img, imgGaussian})
+
+fMotion = fspecial("motion",7,360)
+imgMotion = imfilter(img, fMotion);
+montage({img, imgMotion})
+
+fSobel = fspecial("sobel")
+imgSobel = imfilter(img, fSobel);
+montage({img, imgSobel})
+
+fPrewitt = fspecial("prewitt")
+imgPrewitt = imfilter(img, fPrewitt);
+montage({img, imgPrewitt})
+
+fLaplacian = fspecial("laplacian",0.3)
+imgLaplacian = imfilter(img, fLaplacian);
+montage({img, imgLaplacian})
+
+fLog = fspecial("log",[3,3],0.4)
+imgLog = imfilter(img, fLog);
+montage({img, imgLog})
+
+
+img = im2gray(imread("circlesBrightDark.png"));
+imgFilt = imgaussfilt(img,0.5);
+[imgEdge, threshOut, vertEdgeGrad, horzEdgeGrad] = edge(imgFilt,"sobel");
+montage({img,imgEdge})
+
+lowerBound = 100;
+upperBound = 500;
+imgCirc = imgaussfilt(imgCirc,5);
+[centers, radii] = imfindcircles(imgCirc,[lowerBound, upperBound])
+imshow(imgCirc)
+viscircles(centers, radii);
+
+imgCirc = imresize(imgCirc,0.25);
+imgCirc = imgaussfilt(imgCirc,3);
+[centers, radii] = imfindcircles(imgCirc,[10,100])
+imshow(imgCirc)
+viscircles(centers, radii);
+
+
+
+
+maskedImage = RGB; 
+maskedImage(repmat(~BW,1,1,3)) = 0; 
+montage({RGB,maskedImage})
+
+
+function [BW,maskedImage] = segmentChipsDark(RGB)
+
+% Find circles
+[centers,radii,~] = imfindcircles(RGB,[20 75],'ObjectPolarity','dark','Sensitivity',0.88);
+BW = false(size(RGB,1),size(RGB,2));
+[Xgrid,Ygrid] = meshgrid(1:size(BW,2),1:size(BW,1));
+for n = 1:22
+    BW = BW | (hypot(Xgrid-centers(n,1),Ygrid-centers(n,2)) <= radii(n));
+end
+
+% Create masked image.
+maskedImage = RGB;
+maskedImage(repmat(~BW,[1 1 3])) = 0;
+
+end
+
+function [BW,maskedImage] = segmentChipsBright(RGB)
+
+% Find circles
+[centers,radii,~] = imfindcircles(RGB,[20 75],'ObjectPolarity','bright','Sensitivity',0.88);
+BW = false(size(RGB,1),size(RGB,2));
+[Xgrid,Ygrid] = meshgrid(1:size(BW,2),1:size(BW,1));
+for n = 1:4
+    BW = BW | (hypot(Xgrid-centers(n,1),Ygrid-centers(n,2)) <= radii(n));
+end
+
+% Create masked image.
+maskedImage = RGB;
+maskedImage(repmat(~BW,[1 1 3])) = 0;
+
+end
+
+BW = imcomplement(BW);
+imshow(BW);
+
+maskOn = labeloverlay(I,BW);
+imshow(maskOn)
+
+
+HSV = rgb2hsv(RGB); 
+K = 7; 
+labels = imsegkmeans(im2single(HSV),K);
+montage({RGB,label2rgb(labels)})
+chipmask = HSV(:,:,2) > 0.75; 
+HSVchip = HSV; 
+HSVchip(~repmat(chipmask,1,1,3)) = 0; 
+imshow(hsv2rgb(HSVchip))
+
+
+
+
+brain76Meta = dicominfo("T2_76.IMA")    % Display meta data for DICOM/IMA image
+imgBrain76 = dicomread("T2_76.IMA");     % Read in single image from 3D volume
+
+mrDir = uigetdir
+
+vol = dicomreadVolume(fullfile(mrDir));
+
+
+function [BW,props] = processPuzzle(X)
+%processPuzzle segments and analyzes the puzzle piece regions in the "MathWorks Puzzle" collection.
+%  [BW,props] = processPuzzle(X) preprocesses and binarizes the image X using the adaptive method.
+%  Morphological operations and region filtering are then applied to improve the initial mask. The
+%  final segmentation mask is returned in the variable BW, and a list of region areas is returned
+%  in the variable props.
+%------------------------------------------------------
+
+% Apply Gaussian filter
+X = imgaussfilt(X,0.8);
+
+% Convert image to grayscale
+X = im2gray(X);
+
+% Adjust data to span data range
+X = imadjust(X);
+
+% Threshold image - adaptive threshold
+BW = imbinarize(X, 'adaptive', 'Sensitivity', 0.57, 'ForegroundPolarity', 'bright');
+
+% Open mask with disk
+radius = 3;
+decomposition = 0;
+se = strel('disk', radius, decomposition);
+BW = imopen(BW, se);
+
+% Close mask with disk
+radius = 5;
+decomposition = 0;
+se = strel('disk', radius, decomposition);
+BW = imclose(BW, se);
+
+% Fill holes
+BW = imfill(BW, 'holes');
+
+% Remove portions of the image that touch an outside edge
+BW = imclearborder(BW);
+
+% Filter image based on image properties
+BW = bwpropfilt(BW, 'Area', [5000, inf]);
+
+% Get properties
+props = regionprops(BW, {'Area'});
+
+% Uncomment the following line to return the properties in a table.
+props = struct2table(props);
+
+end
+
+
+puzzleImageBoxed = insertShape(puzzleImage,"Rectangle",threePieceLinearBoxes.BoundingBox,"color","red","LineWidth",5); 
+figure, imshow(puzzleImageBoxed);
+
+
+
+
+

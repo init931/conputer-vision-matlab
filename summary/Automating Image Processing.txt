@@ -1,0 +1,136 @@
+image batch processor app
+segmenting and analyzing concrete crack images
+	crackAnalysis.m for all files using batch processor app
+	distance to edge
+		bwdist
+image datastores
+video files
+	find liquid in video and draw histogram
+		WorkingWithVideoFiles.mlx
+detecting moving objects
+	DetectingTurkey.mlx
+	VideoReader
+	VideoWriter
+	insertShape
+analyzing concrete crack image data
+	AnalyzingCrackData.mlx
+	discretize
+	live editor -> Task -> Clean outlier data
+final project. road traffic
+	FinalRoadTraffic.mlx
+	remove noise
+		medfilt2
+	car segmentation
+		dif = abs(im2double(img152) - im2double(img_back));
+		dif = im2gray(dif) > 0.08;
+		dif = imopen(dif, strel('disk', 3, 0));
+		dif = imclose(dif, strel('disk', 10, 0));
+		dif = imclose(dif, strel('line', 44, 180));
+		dif = imfill(dif, 'holes');
+		dif = uint8(dif) * 255;
+	calc region properties
+		img = im2gray(readFrame(V));
+		props = regionprops(img > 0, 'Area');
+		props = props([props.Area] > 500);
+		NumberRegions = height(props);
+		MeanRegionSize = mean([props.Area]);
+		TotalRegionSize = sum([props.Area]);
+	calculate table with cars information per frame
+		
+
+
+
+
+load CrackData.mat
+crackData
+
+
+cutoffArea = 4000;
+crackData.Risk = discretize(crackData.Area, [0, cutoffArea, inf], ...
+    "categorical", ["Mild", "Severe"]);
+
+dsSevere = imageDatastore(crackData.fileName(crackData.Risk == "Severe"));
+
+
+%Region Analysis
+%  Calculate the area of all regions in the mask, then
+%  compute the distance from each foreground "crack" pixels to the
+%  nearest background pixel.
+rp = regionprops("table",bw,"Area");
+distToEdge = bwdist(~bw);
+maxWidth = 2 * max(distToEdge,[],"all");
+
+
+%Results
+%  Append the results to the returned structure array variable.
+results.BW = bw;
+results.NumRegions = height(rp);
+results.Area = sum(rp.Area);
+results.MaxWidth = maxWidth;
+
+
+
+v = VideoReader("Turkey Video.mp4");
+
+frameSum = im2double(read(v, 1));
+for i = 2:v.NumFrames
+
+    frameSum = frameSum + im2double(read(v, i));
+
+end
+aveFrame = frameSum/v.NumFrames;
+
+
+
+
+vOut = VideoWriter("detecting-turkey.mp4", "MPEG-4");
+vOut.FrameRate = v.FrameRate;
+
+open(vOut);
+v.CurrentTime = 0;
+
+for i = 1:v.NumFrames
+
+    img_orig = read(v, i);
+    img = abs(aveFrame - im2double(img_orig));
+
+    %X = imadjust(img);
+    BW = im2gray(img) > 0.25;
+    BW = imerode(BW, strel('disk', 3, 0));
+    BW = imopen(BW, strel('disk', 4, 0));
+    BW = imclose(BW, strel('disk', 13, 0));
+    
+    props = regionprops("table", BW, "BoundingBox");
+    tBoxed = insertShape(img_orig, "rectangle", props.BoundingBox, "LineWidth", 3, "Color", "red");
+
+    writeVideo(vOut, tBoxed);
+end
+close(vOut);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

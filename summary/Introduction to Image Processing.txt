@@ -1,0 +1,138 @@
+intensity of image
+	imshow
+	imtool
+image metadata
+	imfinfo
+uint8
+im2double
+image compression
+	jpg
+	png
+	tif
+adjusting dark image
+	rm ouliers pixels
+	imlocalbrighten
+	imadjust
+	histeq
+	adapthisteq
+rotate image
+	darkDog = imrotate(imread("dash.jpg"),-90);
+thresholding
+	Otsu's method
+	imbinarize
+		"adaptive"
+		"ForegroundPolarity"
+		"Sensitivity"
+	effectiveness metrics
+		[~,effectivenessMetric1] = graythresh(img187)
+Multilevel thresholding
+	threshValues = multithresh(img,7);
+	labels = imquantize(img,threshValues);
+	labelsColor = label2rgb(labels);
+color to gray
+	im2gray
+color spaces
+	rgb
+	hsv
+	YCbCr
+	L*a*b*
+haze
+	defogged = imreducehaze(foggy);
+Brightening Dark Images
+	brightCity = imlocalbrighten(darkCity, amount)
+find ripe bluberries
+	convert to hsv
+	select with UI colors
+find area of ice melting in 'George VI Ice Shelf'
+find flooding area in 'Great Flood of the Mississippi'
+image histogram
+	imhist
+	imadjust
+	histeq
+	adapthisteq
+	histogram()
+Histogram Matching
+	Histogram matching adjusts the brightness values in an image to match a reference image.  This can be used as a preprocessing step for thresholding, allowing for a common threshold value to be applied to multiple images.
+	imhistmatch()
+
+
+
+
+
+
+
+
+
+img = imread("boston night.JPG");
+imshow(img)
+imwrite(orion, "Orion JPG version.jpg", "Quality", 100);
+orionJPGinfo = imfinfo("Orion JPG version.jpg");
+
+load brainMRI
+imshow(brainMRI)
+max(brainMRI(:))
+
+isequal(moonPNG, moon)
+
+uint8(img)
+im2double(moon)
+imgDate2 = datetime(imgDate, "InputFormat", "yyyy:MM:dd HH:mm:ss")
+
+imshow(moonDiff(:,:,2), [])
+colorbar
+
+montage({preflood,postflood})
+
+nnz(BWpre)
+
+img(1:10,1:10,3)
+hsvImg(1:10,1:10,3)
+ycbcrImg(1:10,1:10,3)
+labImg(1:10,1:10,3)
+% Convert RGB image to chosen color space
+I = rgb2hsv(RGB);
+
+img187 = im2gray(imread("00187.jpg"));
+BW1 = imbinarize(img187);
+montage({img187,BW1})
+
+BW = imbinarize(img,"adaptive",...
+    "ForegroundPolarity","bright",...
+    "Sensitivity",0.317);
+
+[~,effectivenessMetric1] = graythresh(img187)
+
+% Threshold image with manual threshold
+BW = im2gray(RGB) > 1.007100e+02;
+
+img = imread("armxray.png");
+threshValues = multithresh(img,7);
+labels = imquantize(img,threshValues);
+labelsColor = label2rgb(labels);
+montage({img,labelsColor})
+
+foggy = imread("foggyroad.jpg");
+defogged = imreducehaze(foggy);
+montage({foggy, defogged})
+
+darkCity = imread("boston night.jpg");
+amount = 1;
+brightCity = imlocalbrighten(darkCity, amount);
+montage({darkCity, brightCity})
+
+imgAdjust = imadjust(img);
+imgEqual = histeq(img);
+imgAdapt = adapthisteq(img);
+montage({img, imgAdjust, imgEqual, imgAdapt}, "Size", [1 4])
+
+histogram(imgEqual, "Normalization", "cumcount")
+xlabel("Pixel Brightness")
+ylabel("Cumulative Number of Pixles")
+
+imhist(imgAdapt)
+ylim([0 Inf])
+
+matchImg = imhistmatch(crackImg, refImg);
+imhist(matchImg)
+
+
